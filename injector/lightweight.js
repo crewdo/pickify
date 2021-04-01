@@ -96,12 +96,11 @@ function pickifying(){
 	destroy();
 
 	let body = document.getElementsByTagName('body')[0];
-
 	let zoomer = zoomerGenerator();
 	body.insertAdjacentHTML("beforeend", zoomer);
 	pickify.pickifyZoomer = document.getElementById('pickify-zoomer');
 	pickify.pickifyZoomerItems = pickify.pickifyZoomer.querySelectorAll('td');
-	body.classList.add('pickifying');
+	document.documentElement.classList.add('pickifying');
 	document.addEventListener('mousemove', pickifyMonitor);
 	document.addEventListener('click', getCurrentSelectColor);
 	document.addEventListener('scroll', recaptureTab);

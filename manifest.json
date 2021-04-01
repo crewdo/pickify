@@ -27,5 +27,8 @@
             "mac": "Ctrl+Shift+X"
         }
     }
-  }
+  },
+  "web_accessible_resources": [
+    "img/cursor.png"
+  ]
 }

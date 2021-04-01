@@ -21,11 +21,11 @@
     padding: 0px;
     box-sizing: border-box;
 }
-body.pickifying *{
-	cursor: zoom-in;
+html.pickifying *{
+	cursor: url(chrome-extension://__MSG_@@extension_id__/img/cursor.png) 8 8, auto !important;
 	pointer-events: none;
 }
-body.pickifying {
-	cursor: zoom-in;
+html.pickifying {
+	cursor: url(chrome-extension://__MSG_@@extension_id__/img/cursor.png) 8 8, auto !important;
 }
 
