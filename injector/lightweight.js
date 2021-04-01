@@ -77,6 +77,8 @@ function getCurrentSelectColor(e) {
 }
 
 function recaptureTab(){
+
+	if(!pickify.pickifyZoomer) return;
 	//Hide Zoomer for recapturing
 	findAndToggleZoomer('none');
 	//IMPORTANT: This one trigger on Scroll and Resize. Make sure recapture 1 time after scroll.
