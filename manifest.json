@@ -1,0 +1,31 @@
+{
+  "name": "Pickify",
+  "manifest_version": 2,
+  "version": "1.0",
+  "description": "Pick your color from the page!",
+  "browser_action": {},
+  "background": {
+    "scripts": [
+      "background/main.js"
+    ]
+  },
+
+  "permissions": [
+    "activeTab"
+  ],
+  "content_scripts": [
+    {
+      "run_at": "document_end",
+      "matches": ["\u003Call_urls\u003E"], 
+      "css" : ["styles/main.css"]
+    }
+],
+  "commands": {
+    "_execute_browser_action": {
+        "suggested_key": {
+            "windows": "Ctrl+Shift+X",
+            "mac": "Ctrl+Shift+X"
+        }
+    }
+  }
+}

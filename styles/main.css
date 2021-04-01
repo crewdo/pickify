@@ -1,0 +1,31 @@
+#pickify-zoomer{
+    pointer-events: none;
+    box-sizing: border-box;
+    border-radius: 50%;
+    overflow: hidden;
+    position: absolute;
+    z-index: 2147483647;
+    right: -1000px;
+    top: -1000px;
+    border: 1px solid #909090;
+}
+#pickify-zoomer table, #pickify-zoomer td, #pickify-zoomer th{
+    border-collapse: collapse;
+    border: 1px solid #adabab;
+
+}
+#pickify-zoomer tr {
+    border-style: none;
+}
+#pickify-zoomer td {
+    padding: 0px;
+    box-sizing: border-box;
+}
+body.pickifying *{
+	cursor: zoom-in;
+	pointer-events: none;
+}
+body.pickifying {
+	cursor: zoom-in;
+}
+
