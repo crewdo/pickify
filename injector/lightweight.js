@@ -1,6 +1,7 @@
 if(!window.pickied) {
 	var pickify = {
-		pickifyZoomerRatio: 11  //Must be Odd for accurate
+		pickifyZoomerRatio: 11,  //Must be Odd for accurate,
+		pickifyZoomerItems: []
 	}
 
 	var timeoutOnRecapture;
@@ -24,7 +25,7 @@ function initialize() {
 	window.pickied = 1;
 
 	chrome.extension.onMessage.addListener(function(request, sender, sendResponse) {
-		if(request.type === 'returnCapturedImageData') {
+		if(request.action === 'returnCapturedImageData') {
 			pickify.canvas = document.createElement("canvas");
 			pickify.ctx = pickify.canvas.getContext("2d");
 			pickify.image = new Image();
@@ -66,13 +67,8 @@ function pickifyMonitor(e) {
 	let startXPixelPositionOfImageToShowInZoomer = e.pageX - Math.floor(pickify.pickifyZoomerRatio / 2);
 	let startYPixelPositionOfImageToShowInZoomer = e.pageY - window.pageYOffset - Math.floor(pickify.pickifyZoomerRatio / 2);
 	let capturedImageData = pickify.ctx.getImageData(startXPixelPositionOfImageToShowInZoomer, startYPixelPositionOfImageToShowInZoomer, pickify.pickifyZoomerRatio, pickify.pickifyZoomerRatio).data;
-	let tdList = pickifyZoom.querySelectorAll('table td');
-
 	for(let rgbIndex = 0; rgbIndex < capturedImageData.length; rgbIndex += 4) {
-		let red = capturedImageData[rgbIndex];
-		let green = capturedImageData[rgbIndex + 1];
-		let blue = capturedImageData[rgbIndex + 2];
-		tdList[rgbIndex / 4].style.backgroundColor = `rgba(${red}, ${green}, ${blue})`;
+		pickify.pickifyZoomerItems[rgbIndex / 4].style.backgroundColor = `rgba(${capturedImageData[rgbIndex]}, ${capturedImageData[rgbIndex + 1]}, ${capturedImageData[rgbIndex + 2]})`;
 	}
 }
 
@@ -84,30 +80,31 @@ function getCurrentSelectColor(e) {
 }
 
 function recaptureTab(){
+	//Hide Zoomer for recapturing
+	findAndToggleZoomer('none');
 	//IMPORTANT: This one trigger on Scroll and Resize. Make sure recapture 1 time after scroll.
 	clearTimeout(timeoutOnRecapture);
 	timeoutOnRecapture = setTimeout(() => {
-		chrome.extension.sendMessage({type: 'recaptureTab'});
-	}, 400);
+		chrome.extension.sendMessage({action: 'recaptureTab'}, function() {
+			findAndToggleZoomer('unset');
+		});
+	}, 250);
+
 }
 
-function pickifying(fromReCapture = false){
+function pickifying(){
+	destroy();
 
-	findAndRemoveZoomer()
-	
 	let body = document.getElementsByTagName('body')[0];
 
-	let zoomer = zoomerGenerator()
-
+	let zoomer = zoomerGenerator();
 	body.insertAdjacentHTML("beforeend", zoomer);
-
-	if(!fromReCapture) {
-		body.classList.add('pickifying');
-		document.addEventListener('mousemove', pickifyMonitor);
-		document.addEventListener('click', getCurrentSelectColor);
-		document.addEventListener('resize', recaptureTab);
-		document.addEventListener('scroll', recaptureTab);
-	}
+	pickify.pickifyZoomerItems = document.getElementById('pickify-zoomer').querySelectorAll('td');
+	body.classList.add('pickifying');
+	document.addEventListener('mousemove', pickifyMonitor);
+	document.addEventListener('click', getCurrentSelectColor);
+	document.addEventListener('scroll', recaptureTab);
+	window.addEventListener('resize', recaptureTab);
 
 }
 
@@ -115,6 +112,12 @@ function findAndRemoveZoomer() {
 	let zoomer = document.getElementById('pickify-zoomer');
 	if(zoomer) {
 		zoomer.remove();
+	}
+}
+function findAndToggleZoomer(display = 'none') {
+	let zoomer = document.getElementById('pickify-zoomer');
+	if(zoomer) {
+		zoomer.style.display = display;
 	}
 }
 
@@ -143,9 +146,8 @@ function zoomerGenerator() {
 function destroy() {
 	findAndRemoveZoomer();
 	document.getElementsByTagName('body')[0].classList.remove('pickifying');
-	window.removeEventListener('mousemove', pickifyMonitor)
-	window.removeEventListener('click', getCurrentSelectColor)
-	['scroll', 'resize'].forEach(function(value, index) {
-		window.removeEventListener(value, recaptureTab)
-	});
+	document.removeEventListener('mousemove', pickifyMonitor)
+	document.removeEventListener('click', getCurrentSelectColor)
+	document.removeEventListener('scroll', recaptureTab)
+	window.removeEventListener('resize', recaptureTab)
 }
