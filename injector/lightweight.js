@@ -1,14 +1,15 @@
 if(!window.pickied) {
 	var pickify = {
 		pickifyZoomerRatio: 11,  //Must be Odd for accurate,
-		pickifyZoomerItems: []
+		pickifyZoomerItems: [],
+		pickifyZoomer: null
 	}
 
 	var timeoutOnRecapture;
 	
 	initialize()
 } 
-else if(!document.getElementById('pickify-zoomer')) {
+else if(!pickify.pickifyZoomer) {
 	pickifying()
 }
 
@@ -40,6 +41,7 @@ function initialize() {
 	});
 
 	document.onkeydown = function(evt) {
+		console.log('down')
 		evt = evt || window.event;
 		let isEscape = false;
 		if ("key" in evt) {
@@ -57,13 +59,8 @@ function initialize() {
 
 //todo
 function pickifyMonitor(e) {
-
-	if(!pickify.ctx) return;
-
-	let pickifyZoom = document.getElementById('pickify-zoomer');
-	pickifyZoom.style.left = e.pageX + 'px';
-	pickifyZoom.style.top = e.pageY + 'px';
-
+	 pickify.pickifyZoomer.style.left = e.pageX + 'px';
+	 pickify.pickifyZoomer.style.top = e.pageY + 'px';
 	let startXPixelPositionOfImageToShowInZoomer = e.pageX - Math.floor(pickify.pickifyZoomerRatio / 2);
 	let startYPixelPositionOfImageToShowInZoomer = e.pageY - window.pageYOffset - Math.floor(pickify.pickifyZoomerRatio / 2);
 	let capturedImageData = pickify.ctx.getImageData(startXPixelPositionOfImageToShowInZoomer, startYPixelPositionOfImageToShowInZoomer, pickify.pickifyZoomerRatio, pickify.pickifyZoomerRatio).data;
@@ -93,13 +90,15 @@ function recaptureTab(){
 }
 
 function pickifying(){
+	
 	destroy();
 
 	let body = document.getElementsByTagName('body')[0];
 
 	let zoomer = zoomerGenerator();
 	body.insertAdjacentHTML("beforeend", zoomer);
-	pickify.pickifyZoomerItems = document.getElementById('pickify-zoomer').querySelectorAll('td');
+	pickify.pickifyZoomer = document.getElementById('pickify-zoomer');
+	pickify.pickifyZoomerItems = pickify.pickifyZoomer.querySelectorAll('td');
 	body.classList.add('pickifying');
 	document.addEventListener('mousemove', pickifyMonitor);
 	document.addEventListener('click', getCurrentSelectColor);
@@ -109,15 +108,17 @@ function pickifying(){
 }
 
 function findAndRemoveZoomer() {
-	let zoomer = document.getElementById('pickify-zoomer');
-	if(zoomer) {
-		zoomer.remove();
+	if(pickify.pickifyZoomer) {
+		pickify.pickifyZoomer.remove();
 	}
+
+	pickify.pickifyZoomerItems = [];
+	pickify.pickifyZoomer = null;
+
 }
 function findAndToggleZoomer(display = 'none') {
-	let zoomer = document.getElementById('pickify-zoomer');
-	if(zoomer) {
-		zoomer.style.display = display;
+	if(pickify.pickifyZoomer) {
+		pickify.pickifyZoomer.style.display = display;
 	}
 }
 
