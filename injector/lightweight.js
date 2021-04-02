@@ -1,6 +1,7 @@
 if(!window.pickied) {
 	var pickify = {
 		pickifyZoomerRatio: 11,  //Must be Odd for accurate,
+		pickifyZoomerItemDimension: 10,  //Must be Odd for accurate,
 		pickifyZoomerItems: [],
 		pickifyZoomer: null
 	}
@@ -41,7 +42,6 @@ function initialize() {
 	});
 
 	document.onkeydown = function(evt) {
-		console.log('down')
 		evt = evt || window.event;
 		let isEscape = false;
 		if ("key" in evt) {
@@ -84,10 +84,11 @@ function recaptureTab(){
 	//IMPORTANT: This one trigger on Scroll and Resize. Make sure recapture 1 time after scroll.
 	clearTimeout(timeoutOnRecapture);
 	timeoutOnRecapture = setTimeout(() => {
-		chrome.extension.sendMessage({action: 'recaptureTab'}, function() {
+		chrome.extension.sendMessage({action: 'recaptureTab'}, function(){
 			findAndToggleZoomer('unset');
 		});
-	}, 250);
+		
+	}, 220);
 
 }
 
@@ -132,13 +133,13 @@ function zoomerGenerator() {
 		presenter += `<tr>`
 		for(let j = 0; j < pickify.pickifyZoomerRatio; j++) {
 			presenter += `<td 
-							style="width: ${pickify.pickifyZoomerRatio}px; height: ${pickify.pickifyZoomerRatio}px; ${j == centerSquare && i === centerSquare ? centerSquareStyle : ``}">
+							style="width: ${pickify.pickifyZoomerItemDimension}px; height: ${pickify.pickifyZoomerItemDimension}px; ${j == centerSquare && i === centerSquare ? centerSquareStyle : ``}">
 						  </td>`
 		}
 		presenter += `</tr>`
 	}
 
-	let zoomerDimension = pickify.pickifyZoomerRatio * pickify.pickifyZoomerRatio - 1; // -1 for smoothy pixel
+	let zoomerDimension = pickify.pickifyZoomerItemDimension * pickify.pickifyZoomerRatio - 1; // -1 for smoothy pixel
 
 	return `<div id="pickify-zoomer" style="width: ${zoomerDimension}px; height: ${zoomerDimension}px"">
 				<table>${presenter}</table>
@@ -147,7 +148,7 @@ function zoomerGenerator() {
 
 function destroy() {
 	findAndRemoveZoomer();
-	document.getElementsByTagName('body')[0].classList.remove('pickifying');
+	document.documentElement.classList.remove('pickifying');
 	document.removeEventListener('mousemove', pickifyMonitor)
 	document.removeEventListener('click', getCurrentSelectColor)
 	document.removeEventListener('scroll', recaptureTab)
