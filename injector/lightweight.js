@@ -1,7 +1,7 @@
 if(!window.pickied) {
 	var pickify = {
 		pickifyZoomerRatio: 11,  //Must be Odd for accurate,
-		pickifyZoomerItemDimension: 10,  //Must be Odd for accurate,
+		pickifyZoomerItemDimension: 10, //any value
 		pickifyZoomerItems: [],
 		pickifyZoomer: null,
 		pickifyMonitor: function(e) {
@@ -9,9 +9,12 @@ if(!window.pickied) {
 			pickify.pickifyZoomer.style.top = e.pageY + 'px';
 		   let startXPixelPositionOfImageToShowInZoomer = e.pageX - Math.floor(pickify.pickifyZoomerRatio / 2);
 		   let startYPixelPositionOfImageToShowInZoomer = e.pageY - window.pageYOffset - Math.floor(pickify.pickifyZoomerRatio / 2);
-		   let capturedImageData = pickify.ctx.getImageData(startXPixelPositionOfImageToShowInZoomer, startYPixelPositionOfImageToShowInZoomer, pickify.pickifyZoomerRatio, pickify.pickifyZoomerRatio).data;
-		   for(let rgbIndex = 0; rgbIndex < capturedImageData.length; rgbIndex += 4) {
-			   pickify.pickifyZoomerItems[rgbIndex / 4].style.backgroundColor = `rgba(${capturedImageData[rgbIndex]}, ${capturedImageData[rgbIndex + 1]}, ${capturedImageData[rgbIndex + 2]})`;
+		 
+		   if(pickify.ctx) {
+			let capturedImageData = pickify.ctx.getImageData(startXPixelPositionOfImageToShowInZoomer, startYPixelPositionOfImageToShowInZoomer, pickify.pickifyZoomerRatio, pickify.pickifyZoomerRatio).data;
+			for(let rgbIndex = 0; rgbIndex < capturedImageData.length; rgbIndex += 4) {
+				pickify.pickifyZoomerItems[rgbIndex / 4].style.backgroundColor = `rgba(${capturedImageData[rgbIndex]}, ${capturedImageData[rgbIndex + 1]}, ${capturedImageData[rgbIndex + 2]})`;
+			}
 		   }
 	   },
 	   getCurrentSelectColor: function(e) {
