@@ -3,7 +3,37 @@ if(!window.pickied) {
 		pickifyZoomerRatio: 11,  //Must be Odd for accurate,
 		pickifyZoomerItemDimension: 10,  //Must be Odd for accurate,
 		pickifyZoomerItems: [],
-		pickifyZoomer: null
+		pickifyZoomer: null,
+		pickifyMonitor: function(e) {
+			pickify.pickifyZoomer.style.left = e.pageX + 'px';
+			pickify.pickifyZoomer.style.top = e.pageY + 'px';
+		   let startXPixelPositionOfImageToShowInZoomer = e.pageX - Math.floor(pickify.pickifyZoomerRatio / 2);
+		   let startYPixelPositionOfImageToShowInZoomer = e.pageY - window.pageYOffset - Math.floor(pickify.pickifyZoomerRatio / 2);
+		   let capturedImageData = pickify.ctx.getImageData(startXPixelPositionOfImageToShowInZoomer, startYPixelPositionOfImageToShowInZoomer, pickify.pickifyZoomerRatio, pickify.pickifyZoomerRatio).data;
+		   for(let rgbIndex = 0; rgbIndex < capturedImageData.length; rgbIndex += 4) {
+			   pickify.pickifyZoomerItems[rgbIndex / 4].style.backgroundColor = `rgba(${capturedImageData[rgbIndex]}, ${capturedImageData[rgbIndex + 1]}, ${capturedImageData[rgbIndex + 2]})`;
+		   }
+	   },
+	   getCurrentSelectColor: function(e) {
+		let middleHighlightedTd = document.querySelectorAll(`#pickify-zoomer > table tr:nth-child(${Math.floor(pickify.pickifyZoomerRatio / 2) + 1}) > td:nth-child(${Math.floor(pickify.pickifyZoomerRatio / 2)  + 1})`)[0];
+		console.log(middleHighlightedTd.style.backgroundColor);
+		console.log(pickifyRGBtoHEX(middleHighlightedTd.style.backgroundColor));
+		},
+		recaptureTab: function (){
+
+			if(!pickify.pickifyZoomer) return;
+			//Hide Zoomer for recapturing
+			findAndToggleZoomer('none');
+			//IMPORTANT: This one trigger on Scroll and Resize. Make sure recapture 1 time after scroll.
+			clearTimeout(timeoutOnRecapture);
+			timeoutOnRecapture = setTimeout(() => {
+				chrome.extension.sendMessage({action: 'recaptureTab'}, function(){
+					findAndToggleZoomer('unset');
+				});
+			}, 220);
+		
+		}
+	   
 	}
 
 	var timeoutOnRecapture;
@@ -20,93 +50,6 @@ function pickifyRGBtoHEX(rgb) {
         return ("0" + parseInt(x).toString(16)).slice(-2);
     }
     return "#" + hex(rgb[1]) + hex(rgb[2]) + hex(rgb[3]);
-}
-
-function initialize() {
-
-	window.pickied = 1;
-
-	chrome.extension.onMessage.addListener(function(request, sender, sendResponse) {
-		if(request.action === 'returnCapturedImageData') {
-			pickify.canvas = document.createElement("canvas");
-			pickify.ctx = pickify.canvas.getContext("2d");
-			pickify.image = new Image();
-			pickify.image.onload = function() {
-				pickify.canvas.width = window.innerWidth;
-				pickify.canvas.height = window.innerHeight;
-				pickify.ctx.drawImage(pickify.image, 0, 0, pickify.image.width, pickify.image.height, 0, 0, pickify.canvas.width, pickify.canvas.height);
-			};
-	
-			pickify.image.src = request.data;
-		}
-	});
-
-	document.onkeydown = function(evt) {
-		evt = evt || window.event;
-		let isEscape = false;
-		if ("key" in evt) {
-			isEscape = (evt.key === "Escape" || evt.key === "Esc");
-		} else {
-			isEscape = (evt.keyCode === 27);
-		}
-		if (isEscape) destroy();
-	};
-
-	pickifying();
-
-}
-
-
-//todo
-function pickifyMonitor(e) {
-	 pickify.pickifyZoomer.style.left = e.pageX + 'px';
-	 pickify.pickifyZoomer.style.top = e.pageY + 'px';
-	let startXPixelPositionOfImageToShowInZoomer = e.pageX - Math.floor(pickify.pickifyZoomerRatio / 2);
-	let startYPixelPositionOfImageToShowInZoomer = e.pageY - window.pageYOffset - Math.floor(pickify.pickifyZoomerRatio / 2);
-	let capturedImageData = pickify.ctx.getImageData(startXPixelPositionOfImageToShowInZoomer, startYPixelPositionOfImageToShowInZoomer, pickify.pickifyZoomerRatio, pickify.pickifyZoomerRatio).data;
-	for(let rgbIndex = 0; rgbIndex < capturedImageData.length; rgbIndex += 4) {
-		pickify.pickifyZoomerItems[rgbIndex / 4].style.backgroundColor = `rgba(${capturedImageData[rgbIndex]}, ${capturedImageData[rgbIndex + 1]}, ${capturedImageData[rgbIndex + 2]})`;
-	}
-}
-
-//todo
-function getCurrentSelectColor(e) {
-	let middleHighlightedTd = document.querySelectorAll(`#pickify-zoomer > table tr:nth-child(${Math.floor(pickify.pickifyZoomerRatio / 2) + 1}) > td:nth-child(${Math.floor(pickify.pickifyZoomerRatio / 2)  + 1})`)[0];
-	console.log(middleHighlightedTd.style.backgroundColor);
-	console.log(pickifyRGBtoHEX(middleHighlightedTd.style.backgroundColor));
-}
-
-function recaptureTab(){
-
-	if(!pickify.pickifyZoomer) return;
-	//Hide Zoomer for recapturing
-	findAndToggleZoomer('none');
-	//IMPORTANT: This one trigger on Scroll and Resize. Make sure recapture 1 time after scroll.
-	clearTimeout(timeoutOnRecapture);
-	timeoutOnRecapture = setTimeout(() => {
-		chrome.extension.sendMessage({action: 'recaptureTab'}, function(){
-			findAndToggleZoomer('unset');
-		});
-		
-	}, 220);
-
-}
-
-function pickifying(){
-	
-	destroy();
-
-	let body = document.getElementsByTagName('body')[0];
-	let zoomer = zoomerGenerator();
-	body.insertAdjacentHTML("beforeend", zoomer);
-	pickify.pickifyZoomer = document.getElementById('pickify-zoomer');
-	pickify.pickifyZoomerItems = pickify.pickifyZoomer.querySelectorAll('td');
-	document.documentElement.classList.add('pickifying');
-	document.addEventListener('mousemove', pickifyMonitor);
-	document.addEventListener('click', getCurrentSelectColor);
-	document.addEventListener('scroll', recaptureTab);
-	window.addEventListener('resize', recaptureTab);
-
 }
 
 function findAndRemoveZoomer() {
@@ -146,11 +89,64 @@ function zoomerGenerator() {
 			</div>`;
 }
 
+function pickifying(){
+	
+	destroy();
+
+	let body = document.getElementsByTagName('body')[0];
+	let zoomer = zoomerGenerator();
+	body.insertAdjacentHTML("beforeend", zoomer);
+	pickify.pickifyZoomer = document.getElementById('pickify-zoomer');
+	pickify.pickifyZoomerItems = pickify.pickifyZoomer.querySelectorAll('td');
+	document.documentElement.classList.add('pickifying');
+
+	document.addEventListener('mousemove', pickify.pickifyMonitor);
+	document.addEventListener('click', pickify.getCurrentSelectColor);
+	document.addEventListener('scroll', pickify.recaptureTab);
+	window.addEventListener('resize', pickify.recaptureTab);
+
+}
+
 function destroy() {
 	findAndRemoveZoomer();
 	document.documentElement.classList.remove('pickifying');
-	document.removeEventListener('mousemove', pickifyMonitor)
-	document.removeEventListener('click', getCurrentSelectColor)
-	document.removeEventListener('scroll', recaptureTab)
-	window.removeEventListener('resize', recaptureTab)
+	document.removeEventListener('mousemove', pickify.pickifyMonitor)
+	document.removeEventListener('click', pickify.getCurrentSelectColor)
+	document.removeEventListener('scroll', pickify.recaptureTab)
+	window.removeEventListener('resize', pickify.recaptureTab)
+}
+
+
+function initialize() {
+
+	window.pickied = 1;
+
+	chrome.extension.onMessage.addListener(function(request, sender, sendResponse) {
+		if(request.action === 'returnCapturedImageData') {
+			pickify.canvas = document.createElement("canvas");
+			pickify.ctx = pickify.canvas.getContext("2d");
+			pickify.image = new Image();
+			pickify.image.onload = function() {
+				pickify.canvas.width = window.innerWidth;
+				pickify.canvas.height = window.innerHeight;
+				pickify.ctx.drawImage(pickify.image, 0, 0, pickify.image.width, pickify.image.height, 0, 0, pickify.canvas.width, pickify.canvas.height);
+			};
+	
+			pickify.image.src = request.data;
+		}
+	});
+
+	document.onkeydown = function(evt) {
+		evt = evt || window.event;
+		let isEscape = false;
+		if ("key" in evt) {
+			isEscape = (evt.key === "Escape" || evt.key === "Esc");
+		} else {
+			isEscape = (evt.keyCode === 27);
+		}
+		if (isEscape) destroy();
+	};
+
+	pickifying();
+
 }
