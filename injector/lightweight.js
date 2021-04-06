@@ -16,11 +16,15 @@ if(!window.pickied) {
 				pickify.pickifyZoomerItems[rgbIndex / 4].style.backgroundColor = `rgba(${capturedImageData[rgbIndex]}, ${capturedImageData[rgbIndex + 1]}, ${capturedImageData[rgbIndex + 2]})`;
 			}
 		   }
+
+		   let zoomRatioCenter = Math.floor(pickify.pickifyZoomerRatio / 2);
+		   let centerSquare = pickify.pickifyZoomerRatio *  zoomRatioCenter + zoomRatioCenter;
+		   document.getElementById('pickify-hex-text').innerHTML = pickifyRGBtoHEX(pickify.pickifyZoomerItems[centerSquare].style.backgroundColor);
 	   },
 	   getCurrentSelectColor: function(e) {
-		let middleHighlightedTd = document.querySelectorAll(`#pickify-zoomer > table tr:nth-child(${Math.floor(pickify.pickifyZoomerRatio / 2) + 1}) > td:nth-child(${Math.floor(pickify.pickifyZoomerRatio / 2)  + 1})`)[0];
-		console.log(middleHighlightedTd.style.backgroundColor);
-		console.log(pickifyRGBtoHEX(middleHighlightedTd.style.backgroundColor));
+		let zoomRatioCenter = Math.floor(pickify.pickifyZoomerRatio / 2);
+		let centerSquare = pickify.pickifyZoomerRatio *  zoomRatioCenter + zoomRatioCenter;
+		copyToClipboard(pickifyRGBtoHEX(pickify.pickifyZoomerItems[centerSquare].style.backgroundColor))
 		},
 		recaptureTab: function (){
 
@@ -85,11 +89,21 @@ function zoomerGenerator() {
 		presenter += `</tr>`
 	}
 
-	let zoomerDimension = pickify.pickifyZoomerItemDimension * pickify.pickifyZoomerRatio - 1; // -1 for smoothy pixel
+	let zoomerDimension = pickify.pickifyZoomerItemDimension * pickify.pickifyZoomerRatio - 1; // -1 for smoothly pixel
 
-	return `<div id="pickify-zoomer" style="width: ${zoomerDimension}px; height: ${zoomerDimension}px"">
-				<table>${presenter}</table>
+	return `<div id="pickify-zoomer" style="width: ${zoomerDimension}px;">
+				<div id="zoomer-wrapper" style="width: ${zoomerDimension}px; height: ${zoomerDimension}px">
+					<table>${presenter}</table>
+				</div>
+
+				<div id="pickify-board">
+					<span id="pickify-hex-text"></span>
+				</div>
 			</div>`;
+}
+
+function colorBoardGenerator() {
+	return ``;		
 }
 
 function pickifying(){
@@ -98,7 +112,10 @@ function pickifying(){
 
 	let body = document.getElementsByTagName('body')[0];
 	let zoomer = zoomerGenerator();
+	let colorBoard = colorBoardGenerator();
+	body.insertAdjacentHTML("beforeend", colorBoard);
 	body.insertAdjacentHTML("beforeend", zoomer);
+	
 	pickify.pickifyZoomer = document.getElementById('pickify-zoomer');
 	pickify.pickifyZoomerItems = pickify.pickifyZoomer.querySelectorAll('td');
 	document.documentElement.classList.add('pickifying');
@@ -112,11 +129,24 @@ function pickifying(){
 
 function destroy() {
 	findAndRemoveZoomer();
+
+	var board = document.getElementById('pickify-board');
+	if(board) board.remove();
+
 	document.documentElement.classList.remove('pickifying');
 	document.removeEventListener('mousemove', pickify.pickifyMonitor)
 	document.removeEventListener('click', pickify.getCurrentSelectColor)
 	document.removeEventListener('scroll', pickify.recaptureTab)
 	window.removeEventListener('resize', pickify.recaptureTab)
+}
+
+function copyToClipboard(text) {
+		var input = document.createElement('textarea');
+		input.innerHTML = text;
+		document.body.appendChild(input);
+		input.select();
+		document.execCommand('copy');
+		document.body.removeChild(input);
 }
 
 
