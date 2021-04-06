@@ -1,14 +1,19 @@
 #pickify-zoomer{
-    pointer-events: none;
-    box-sizing: border-box;
-    border-radius: 50%;
-    overflow: hidden;
     position: absolute;
     z-index: 2147483647;
     right: -1000px;
     top: -1000px;
-    border: 1px solid #909090;
+    pointer-events: none;
+
 }
+
+#zoomer-wrapper{
+    border-radius: 50%;
+    overflow: hidden;
+    border: 1px solid #909090;
+    box-sizing: border-box;
+}
+
 #pickify-zoomer table, #pickify-zoomer td{
     border-collapse: collapse;
     border: 1px solid #adabab;
@@ -27,5 +32,31 @@ html.pickifying *{
 }
 html.pickifying {
 	cursor: url(chrome-extension://__MSG_@@extension_id__/img/cursor.png) 8 8, auto !important;
+}
+
+#pickify-board{
+    display: flex;
+    align-items: center;
+    background-color: white;
+    width: 70px;
+    height: 12px;
+    margin: 0 auto;
+    margin-top: 3px;
+    width: 56px;
+    justify-content: center;
+}
+
+#pickify-hex-text{
+   color: black;
+   font-size: 12px;
+   font-weight: 100;
+}
+
+#pickify-hex-box{
+    height: 10px;
+    width: 10px;
+    border: 1px solid #555;
+    box-sizing: border-box;
+   margin-right: 5px;
 }
 
