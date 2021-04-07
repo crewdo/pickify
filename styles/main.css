@@ -38,12 +38,12 @@ html.pickifying {
     display: flex;
     align-items: center;
     background-color: white;
-    width: 70px;
     height: 12px;
     margin: 0 auto;
     margin-top: 3px;
     width: 56px;
     justify-content: center;
+    border-radius: 50px;
 }
 
 #pickify-hex-text{
@@ -51,12 +51,3 @@ html.pickifying {
    font-size: 12px;
    font-weight: 100;
 }
-
-#pickify-hex-box{
-    height: 10px;
-    width: 10px;
-    border: 1px solid #555;
-    box-sizing: border-box;
-   margin-right: 5px;
-}
-
